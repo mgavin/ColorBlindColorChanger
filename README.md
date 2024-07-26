@@ -15,10 +15,8 @@ Helps from keeping nameplates with blending in with background colors in your pe
 Set specific colors for blue team vs orange team, or my team vs opponent team, or if you'd like to enable it for certain game modes.
 
 ## Known Issues
----
 - Only works in color blind mode (Settings -> Interface -> Color Blind Mode)
 - Knockout doesn't have an orange team
 
 ## Possible Improvements
----
 - Be able to select which maps it works on and further fine grained customization
