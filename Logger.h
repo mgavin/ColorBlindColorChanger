@@ -11,7 +11,7 @@
  * instead of LOGGER(type, msg);
  *
  * unfortunately this has a lot of unnecessary cost when you don't need certain debug
- * levels :\
+ * levels :\ (although it is kind of nice to have when changing logging levels at runtime)
  */
 
 #ifndef _LOGGER_H_
@@ -20,10 +20,11 @@
 #include <format>
 #include <source_location>
 #include <string_view>
-
 #include "flagpp/flags.hpp"
 
 #include "bakkesmod/wrappers/cvarmanagerwrapper.h"
+
+// import scoped_enum_bitmask;
 
 namespace LOGGER {
 #ifdef _WIN32
@@ -85,9 +86,9 @@ enum class LOGOPTIONS {
 };
 }  // namespace LOGGER
 
-template<>
-// NOLINTNEXTLINE
-constexpr bool flagpp::enabled<LOGGER::LOGOPTIONS> = true;
+constexpr inline bool operator&(const LOGGER::LOGOPTIONS & lhs, const LOGGER::LOGOPTIONS & rhs) {
+      return false;
+}
 
 namespace LOGGER {
 // NOLINTBEGIN
@@ -109,8 +110,7 @@ inline void set_loglevel(const LOGGER::LOGLEVEL & nl) {
 using details::FormatString;
 using details::FormatWString;
 
-template<typename... Args>
-inline void LOG(const FormatString & format_str, Args &&... args) {
+template <typename... Args> inline void LOG(const FormatString & format_str, Args &&... args) {
       auto str = std::format(
             "{}{}{}",
             g_options & LOGOPTIONS::SOURCELOC ? format_str.GetLocation() : "",
@@ -119,8 +119,7 @@ inline void LOG(const FormatString & format_str, Args &&... args) {
       g_cvarmanager->log(std::move(str));
 }
 
-template<typename... Args>
-inline void LOG(const FormatWString & wformat_str, Args &&... args) {
+template <typename... Args> inline void LOG(const FormatWString & wformat_str, Args &&... args) {
       auto str = std::format(
             L"{}{}{}",
             g_options & LOGOPTIONS::SOURCELOC ? wformat_str.GetLocation() : L"",
@@ -130,7 +129,7 @@ inline void LOG(const FormatWString & wformat_str, Args &&... args) {
 }
 
 // USING LOGLEVEL
-template<typename... Args>
+template <typename... Args>
 inline void LOG(const LOGLEVEL log_level, const FormatString & format_str, Args &&... args) {
       if (log_level < g_loglevel) {
             return;
@@ -138,12 +137,44 @@ inline void LOG(const LOGLEVEL log_level, const FormatString & format_str, Args 
       LOG(format_str, args...);
 }
 
-template<typename... Args>
+template <typename... Args>
 inline void LOG(const LOGLEVEL & log_level, const FormatWString & wformat_str, Args &&... args) {
       if (log_level < g_loglevel) {
             return;
       }
       LOG(wformat_str, args...);
+}
+
+template <typename... Args> inline void log_info(const FormatString & format_str, Args &&... args) {
+      LOG(LOGLEVEL::INFO, format_str, args...);
+}
+
+template <typename... Args> inline void log_info(const FormatWString & wformat_str, Args &&... args) {
+      LOG(LOGLEVEL::INFO, wformat_str, args...);
+}
+
+template <typename... Args> inline void log_debug(const FormatString & format_str, Args &&... args) {
+      LOG(LOGLEVEL::DEBUG, format_str, args...);
+}
+
+template <typename... Args> inline void log_debug(const FormatWString & wformat_str, Args &&... args) {
+      LOG(LOGLEVEL::DEBUG, wformat_str, args...);
+}
+
+template <typename... Args> inline void log_warning(const FormatString & format_str, Args &&... args) {
+      LOG(LOGLEVEL::WARNING, format_str, args...);
+}
+
+template <typename... Args> inline void log_warning(const FormatWString & wformat_str, Args &&... args) {
+      LOG(LOGLEVEL::WARNING, wformat_str, args...);
+}
+
+template <typename... Args> inline void log_error(const FormatString & format_str, Args &&... args) {
+      LOG(LOGLEVEL::ERROR, format_str, args...);
+}
+
+template <typename... Args> inline void log_error(const FormatWString & wformat_str, Args &&... args) {
+      LOG(LOGLEVEL::ERROR, wformat_str, args...);
 }
 
 };  // namespace LOGGER

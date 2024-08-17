@@ -53,7 +53,7 @@ public:
 
       static std::shared_ptr<GameWrapper> gameWrapper;
 
-      template<typename T, typename std::enable_if<std::is_base_of<ObjectWrapper, T>::value>::type * = nullptr>
+      template <typename T, typename std::enable_if<std::is_base_of<ObjectWrapper, T>::value>::type * = nullptr>
       static void AddHookedEventWithCaller(
             const std::string &                                                 eventName,
             std::function<void(T caller, void * params, std::string eventName)> func,
@@ -73,7 +73,7 @@ inline std::
                                     HookedEvents::hooked_events;
 inline std::shared_ptr<GameWrapper> HookedEvents::gameWrapper;
 
-template<typename T, typename std::enable_if<std::is_base_of<ObjectWrapper, T>::value>::type *>
+template <typename T, typename std::enable_if<std::is_base_of<ObjectWrapper, T>::value>::type *>
 void HookedEvents::AddHookedEventWithCaller(
       const std::string &                                                 eventName,
       std::function<void(T caller, void * params, std::string eventName)> func,

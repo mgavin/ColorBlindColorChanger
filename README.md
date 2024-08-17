@@ -12,7 +12,8 @@ Changes the colors of the scoreboard and nameplates for the respective teams.
 
 Helps from keeping nameplates with blending in with background colors in your peripheral vision on some maps.
 
-Set specific colors for blue team vs orange team, or my team vs opponent team, or if you'd like to enable it for certain game modes.
+Set specific colors for blue team vs orange team, or your team vs opponent team.
+Set colors either to take effect for every map or customize them on a map-by-map basis.
 
 ## Known Issues
 - Only works in color blind mode (Settings -> Interface -> Color Blind Mode)

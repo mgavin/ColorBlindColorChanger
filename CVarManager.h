@@ -11,7 +11,7 @@
 
 #ifndef LIST_OF_PLUGIN_CVARS
 // I don't think I would care for people to use this without managed cvars.
-// holy shit, imagining a "ManagedCVarWrapper" class... FUCK
+// holy shit, imagining a "ManagedCVarWrapper" class...
 // ... time just needs to be spent on the basics sometimes :(
 #error "Need a list of plugin CVar(s) first before this can be used!"
 #else
@@ -50,7 +50,7 @@ namespace log = LOGGER;
 class CVarManager {
 private:
       // CMAP MADE "COMPILER OUT OF HEAP SPACE" HAPPEN, /Zm2000 or /MP- HAD NO EFFECT BIG
-      // FUCKING SAD!
+      // SAD!
       //      static inline constexpr auto lookup = make_lookup(
       // #define Y(a)         a
       // #define Z(...)       Y(__VA_ARGS__)
@@ -78,11 +78,7 @@ public:
             std::string cvar_name;
 #define X(name, default_value, description, searchable, ...) \
       cvar_name = instance().get_cvar_prefix() + #name;      \
-      instance().getCVM()->registerCvar(                     \
-            cvar_name,                                       \
-            default_value,                                   \
-            description,                                     \
-            searchable __VA_OPT__(, ) __VA_ARGS__);
+      instance().getCVM()->registerCvar(cvar_name, default_value, description, searchable __VA_OPT__(, ) __VA_ARGS__);
             LIST_OF_PLUGIN_CVARS
 #undef X
       }
@@ -105,18 +101,16 @@ public:
       CVarManager(const CVarManager &)             = delete;
       CVarManager & operator=(const CVarManager &) = delete;
 
-#define X(name, ...)                                                         \
-      CVarWrapper get_cvar_##name() {                                        \
-            using std::runtime_error;                                        \
-            /* lookup[#name]; */                                             \
-            std::string cvar_name = instance().get_cvar_prefix() + #name;    \
-            CVarWrapper cv        = instance().getCVM()->getCvar(cvar_name); \
-            if (!cv) {                                                       \
-                  throw runtime_error {std::vformat(                         \
-                        "cvar {} doesn't exist.",                            \
-                        std::make_format_args(cvar_name))};                  \
-            }                                                                \
-            return cv;                                                       \
+#define X(name, ...)                                                                      \
+      CVarWrapper get_cvar_##name() {                                                     \
+            using std::runtime_error;                                                     \
+            /* lookup[#name]; */                                                          \
+            std::string cvar_name = instance().get_cvar_prefix() + #name;                 \
+            CVarWrapper cv        = instance().getCVM()->getCvar(cvar_name);              \
+            if (!cv) {                                                                    \
+                  throw runtime_error {std::format("cvar {} doesn't exist.", cvar_name)}; \
+            }                                                                             \
+            return cv;                                                                    \
       }
       LIST_OF_PLUGIN_CVARS
 #undef X

@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-// #include "CVarManager.h"  // UNABLE TO WORK RIGHT NOW. FUCK.
+// #include "CVarManager.h"  // UNABLE TO WORK RIGHT NOW
 #include "Logger.h"
 
 namespace {
@@ -19,7 +19,7 @@ PersistentManagedCVarStorage::PersistentManagedCVarStorage(
       _auto_write(auto_write)
 
 {
-      log::LOG(log::LOGLEVEL::INFO, "PersistentStorage: created and will store the data in {}", _storage_file.string());
+      log::log_info("PersistentStorage: created and will store the data in {}", _storage_file.string());
       if (auto_load) {
             plugin->gameWrapper->SetTimeout([this](...) { Load(); }, 0.1f);
       }
@@ -49,7 +49,7 @@ void PersistentManagedCVarStorage::OnPersistentCVarChanged(const std::string & o
 
 void PersistentManagedCVarStorage::WritePersistentStorage() {
       std::ofstream out(_storage_file);
-      log::LOG(log::LOGLEVEL::INFO, "PersistentStorage: Writing to file");
+      log::log_info("PersistentStorage: Writing to file");
       for (const auto & [cvar, cvar_cache_item] : _cvar_cache) {
             out << std::format("{} \"{}\" //{}\n", cvar, cvar_cache_item.value, cvar_cache_item.description);
       }
@@ -57,7 +57,7 @@ void PersistentManagedCVarStorage::WritePersistentStorage() {
 
 void PersistentManagedCVarStorage::Load() {
       if (!std::filesystem::exists(_storage_file)) {
-            log::LOG(log::LOGLEVEL::INFO, "PersistentStorage: {} does not exist yet.", _storage_file.string());
+            log::log_info("PersistentStorage: {} does not exist yet.", _storage_file.string());
       }
       log::LOG(log::LOGLEVEL::INFO, "PersistentStorage: Loading the persistent storage cfg.");
       _cv->loadCfg(_storage_file.string());
@@ -69,8 +69,7 @@ void PersistentManagedCVarStorage::AddCVar(const std::string & s) {
             _cvar_cache.insert_or_assign(s, CVarCacheItem {cvar});
             cvar.addOnValueChanged([this](auto old, auto new_cvar) { OnPersistentCVarChanged(old, new_cvar); });
       } else {
-            log::LOG(
-                  log::LOGLEVEL::WARNING,
+            log::log_warning(
                   "PersistentStorage: Warning the cvar {} should be registered before "
                   "adding it to persistent storage",
                   s);

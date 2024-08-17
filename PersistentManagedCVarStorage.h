@@ -83,8 +83,7 @@ public:
        * Adds cvars to be persistent. The cvars have to be registered first.
        * \param cvars List of cvar names
        */
-      template<class Iterable>
-      void AddCVars(const Iterable cvars) {
+      template <class Iterable> void AddCVars(const Iterable cvars) {
             for (const auto & cvar_name : cvars) {
                   AddCVar(cvar_name);
             }

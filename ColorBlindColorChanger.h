@@ -38,6 +38,9 @@ private:
       bool plugin_enabled = false;
       bool cb_enabled     = false;  // is the COLOR BLIND SETTING enabled?!
 
+      const int BLUE_TEAM_IDX   = 0;  // just to designate these more easily as being blue/orange
+      const int ORANGE_TEAM_IDX = 1;
+
       // helper functions
       void init_cvars();
       void init_hooked_events();

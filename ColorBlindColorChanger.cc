@@ -14,15 +14,6 @@
 #include "PersistentManagedCVarStorage.h"
 
 namespace {
-#ifdef _WIN32
-// ERROR macro is defined in Windows header
-// To avoid conflict between these macro and declaration of ERROR / DEBUG in SEVERITY enum
-// We save macro and undef it
-#pragma push_macro("ERROR")
-#pragma push_macro("DEBUG")
-#undef ERROR
-#undef DEBUG
-#endif
 
 namespace log = LOGGER;
 };  // namespace
@@ -51,7 +42,7 @@ void ColorBlindColorChanger::onLoad() {
       init_hooked_events();
 
       cb_enabled = gameWrapper->GetbColorBlind();
-      log::LOG(log::LOGLEVEL::INFO, "GETBCOLORBLIND/cb_enabled: {}", cb_enabled);
+      log::log_info("GETBCOLORBLIND/cb_enabled: {}", cb_enabled);
 }
 
 /**
@@ -73,7 +64,7 @@ void ColorBlindColorChanger::init_hooked_events() {
       HookedEvents::AddHookedEventWithCaller<ActorWrapper>(
             "Function TAGame.GFxData_Settings_TA.SetColorBlind",
             [this](ActorWrapper unused, void * params, std::string event_name) {
-                  log::LOG(log::LOGLEVEL::INFO, "CALLING {}...", event_name);
+                  log::log_info("CALLING {}...", event_name);
                   struct parms {
                         unsigned char unused[0x8];  // HAS THINGS BUT I DONT WANT THEM
                         bool          b;
@@ -82,61 +73,52 @@ void ColorBlindColorChanger::init_hooked_events() {
             });
 
       HookedEvents::AddHookedEvent("Function Engine.GameInfo.PreExit", [this](std::string event_name) {
-            log::LOG(log::LOGLEVEL::INFO, "CALLING {}...", event_name);
+            log::log_info("CALLING {}...", event_name);
             // ASSURED CLEANUP
             onUnload();
       });
 }
 
 void ColorBlindColorChanger::hook_colorblind_color_change_events() {
-      // set team
       HookedEvents::AddHookedEvent(
-            "Function TAGame.GFxHUD_TA.SetTeam",
+            "Function TAGame.GFxHUD_TA.OnAllTeamsCreated",
             [this](auto... fargs) {
-                  log::LOG(log::LOGLEVEL::INFO, "CALLING {} ...", fargs...);
+                  log::log_info("CALLING {} ...", fargs...);
 
                   gameWrapper->SetTimeout(
                         [this](GameWrapper * gw) {
                               ServerWrapper sw = gameWrapper->GetCurrentGameState();
                               if (!sw) {
-                                    log::LOG(log::LOGLEVEL::DEBUG, "NO SERVER");
+                                    log::log_error("NO SERVER");
                                     return;
                               }
 
                               /************ This section is for "blue team" vs "orange team" *********/
                               ArrayWrapper<TeamWrapper> awtw = sw.GetTeams();
                               if (awtw.IsNull()) {
-                                    log::LOG(log::LOGLEVEL::DEBUG, "NO ARRAYWRAPPER<TEAMWRAPPER>");
+                                    log::log_error("NO ARRAYWRAPPER<TEAMWRAPPER>");
                                     return;
                               }
 
-                              int blueteam   = 0;
-                              int orangeteam = 1;
+                              TeamWrapper bteam = awtw.Count() > 0 ? awtw.Get(BLUE_TEAM_IDX) : NULL;
 
-                              TeamWrapper bteam = sw.GetTeams().Get(blueteam);
                               if (bteam) {
                                     bteam.SetColorBlindFontColor(LinearColor(0.0f, 0.9f, 0.6f, 1.0f));
                                     bteam.UpdateColors();
                               } else {
-                                    log::LOG(log::LOGLEVEL::DEBUG, "NO BLEU TEAM");
+                                    log::log_error("NO BLEU TEAM");
                               }
 
-                              if (static_cast<PlaylistId>(sw.GetPlaylist().GetPlaylistId())
-                                  == bm_helper::playlist_str_ids.at("Knockout")) {
-                                    log::LOG(log::LOGLEVEL::DEBUG, "THERE IS NO ORANGE TEAM IN KNOCKOUT!");
-                                    return;
-                              }
-
-                              TeamWrapper oteam = sw.GetTeams().Get(orangeteam);
+                              TeamWrapper oteam = awtw.Count() > 1 ? awtw.Get(ORANGE_TEAM_IDX) : NULL;
                               if (oteam) {
                                     oteam.SetColorBlindFontColor(LinearColor(1.0f, 0.0f, 0.0f, 1.0f));
                                     oteam.UpdateColors();
                               } else {
-                                    log::LOG(log::LOGLEVEL::DEBUG, "NO ORANGE TEAM");
+                                    log::log_error("NO ORANGE TEAM");
                               }
+                              /************End: This section is for "blue team" vs "orange team" *********/
                         },
                         0.25f);
-                  /************End: This section is for "my team" vs "other team" *********/
                   /************ This section is for "my team" vs "other team" *********/
                   // it works!
                   // PlayerControllerWrapper pcw = gameWrapper->GetPlayerController();
@@ -181,7 +163,7 @@ void ColorBlindColorChanger::hook_colorblind_color_change_events() {
 }
 
 void ColorBlindColorChanger::unhook_colorblind_color_change_events() {
-      HookedEvents::RemoveHook("");
+      HookedEvents::RemoveHook("Function TAGame.GFxHUD_TA.OnAllTeamsCreated");
 }
 
 void ColorBlindColorChanger::enable_plugin() {
@@ -271,9 +253,8 @@ static inline void TextURL(const char * name_, const char * URL_, uint8_t SameLi
 void ColorBlindColorChanger::RenderSettings() {
       if (!cb_enabled) {
             std::string disclaimer {
-                  "This plugin does not work with the color blind setting"
-                  " (found in Settings -> Interface -> Color blind mode) "
-                  "disabled."};
+                  "This plugin does not work with the color blind setting disabled "
+                  "(found in Settings -> Interface -> Color blind mode)."};
             float dwidth = ImGui::CalcTextSize(disclaimer.c_str()).x;
             AlignForWidth(dwidth);
             ImGui::TextWrapped(disclaimer.c_str());
@@ -373,9 +354,3 @@ std::string ColorBlindColorChanger::GetPluginName() {
  */
 void ColorBlindColorChanger::onUnload() {
 }
-
-#ifdef _WIN32
-// We restore the ERROR Windows macro
-#pragma pop_macro("ERROR")
-#pragma pop_macro("DEBUG")
-#endif
