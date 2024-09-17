@@ -64,13 +64,13 @@ private:
       std::string                         _prefix;
       std::shared_ptr<CVarManagerWrapper> _cvarManager;
 
-      std::shared_ptr<CVarManagerWrapper> getCVM() { return _cvarManager; }
-
 public:
       static CVarManager & instance() {
             static CVarManager instance;
             return instance;
       }
+
+      std::shared_ptr<CVarManagerWrapper> getCVM() { return _cvarManager; }
 
       void register_cvars() {
             // registerCvar([req] name,[req] default_value,[req] description, searchable,

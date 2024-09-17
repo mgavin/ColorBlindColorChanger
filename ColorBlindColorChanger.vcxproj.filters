@@ -19,6 +19,9 @@
     <Filter Include="IMGUI">
       <UniqueIdentifier>{1bf6b855-36f0-41be-80c8-3840eecaf262}</UniqueIdentifier>
     </Filter>
+    <Filter Include="IMGUI_SUGAR">
+      <UniqueIdentifier>{235779a0-668b-4cbd-aba9-d421c36f10ce}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="vs_property_pages\BakkesMod.props" />
@@ -124,6 +127,9 @@
     </ClInclude>
     <ClInclude Include="imgui\imstb_truetype.h">
       <Filter>IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_sugar\imgui_sugar.hpp">
+      <Filter>IMGUI_SUGAR</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -35,11 +35,20 @@ private:
       // data members
       std::unique_ptr<PersistentManagedCVarStorage> cvar_storage;
 
-      bool plugin_enabled = false;
-      bool cb_enabled     = false;  // is the COLOR BLIND SETTING enabled?!
+      bool                                             plugin_enabled = false;
+      bool                                             cb_enabled     = false;  // is the COLOR BLIND SETTING enabled?!
+      bool                                             globally_set   = true;
+      std::vector<std::string>                         game_maps_list;
+      std::vector<std::pair<std::string, std::string>> game_maps_name_filename;
+      int                                              colorize_option = 0;
 
-      const int BLUE_TEAM_IDX   = 0;  // just to designate these more easily as being blue/orange
-      const int ORANGE_TEAM_IDX = 1;
+      static inline const int         BLUE_TEAM_IDX   = 0;  // just to designate these more easily as being blue/orange
+      static inline const int         ORANGE_TEAM_IDX = 1;
+      static inline const LinearColor default_blue_rgba   = {0.0f, 0.1f, 0.45f, 1.0f};
+      static inline const LinearColor default_orange_rgba = {1.0f, 0.4f, 0.0f, 1.0f};
+      static inline const char *      color_set_choice[2] = {
+            "Set Blue / Orange team color",
+            "Set Your / Opponent team color"};
 
       // helper functions
       void init_cvars();
@@ -50,6 +59,8 @@ private:
 
       void hook_colorblind_color_change_events();
       void unhook_colorblind_color_change_events();
+
+      void set_colorblind_colors();
 
 public:
       // honestly, for the sake of inheritance,
