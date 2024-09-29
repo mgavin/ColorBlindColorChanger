@@ -18,9 +18,10 @@
 
 // registerCvar([req] name,[req] default_value,[req] description, searchable, has_min,
 // min, has_max, max, save_to_cfg)
-#define LIST_OF_PLUGIN_CVARS                          \
-      X(enabled, "1", "Is the plugin enabled?", true) \
-      // X()
+#define LIST_OF_PLUGIN_CVARS                                                       \
+      X(enabled, "1", "Is the plugin enabled?", true)                              \
+      X(global, "1", "True if colors apply to every map. False otherwise.", false) \
+      X(colorize_option, "0", "Dictates how to apply coloring the different teams.", false)
 
 #include "CVarManager.h"
 

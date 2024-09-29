@@ -18,11 +18,10 @@
 #include "PersistentManagedCVarStorage.h"
 
 namespace {
-
 namespace log = LOGGER;
 };  // namespace
 
-BAKKESMOD_PLUGIN(ColorBlindColorChanger, "ColorBlindColorChanger", "0.1.0", /*UNUSED*/ NULL);
+BAKKESMOD_PLUGIN(ColorBlindColorChanger, "ColorBlindColorChanger", "1.0.0", /*UNUSED*/ NULL);
 
 /**
  * \brief do the following when your plugin is loaded
@@ -33,7 +32,7 @@ void ColorBlindColorChanger::onLoad() {
 
       // set up logging necessities
       log::set_cvarmanager(cvarManager);
-      log::set_loglevel(log::LOGLEVEL::INFO);
+      log::set_loglevel(log::LOGLEVEL::OFF);
 
       // set a prefix to attach in front of all cvars to avoid name clashes
       CVarManager::instance().set_cvar_prefix("cbcc_");  // INCLUDE PLUGIN CVAR PREFIX HERE!!!
@@ -108,6 +107,12 @@ void ColorBlindColorChanger::init_cvars() {
                   disable_plugin();
             }
       });
+
+      CVarManager::instance().get_cvar_global().addOnValueChanged(
+            [this](std::string oldValue, CVarWrapper newValue) { globally_set = newValue.getBoolValue(); });
+
+      CVarManager::instance().get_cvar_colorize_option().addOnValueChanged(
+            [this](std::string oldValue, CVarWrapper newValue) { colorize_option = newValue.getBoolValue(); });
 }
 
 /**
@@ -134,9 +139,10 @@ void ColorBlindColorChanger::init_hooked_events() {
 
 void ColorBlindColorChanger::hook_colorblind_color_change_events() {
       HookedEvents::AddHookedEvent(
+            // this one is called when teams are created, so you can use it in spectator mode
             "Function TAGame.GFxHUD_TA.OnAllTeamsCreated",
             [this](auto... fargs) {
-                  if (!globally_set) {
+                  if (colorize_option == 1) {
                         // this is because it seems only valid if blue/orange is set
                         return;
                   }
@@ -146,9 +152,13 @@ void ColorBlindColorChanger::hook_colorblind_color_change_events() {
             true);
 
       HookedEvents::AddHookedEvent(
-            // this function seems to be called when a game starts, it's perfect for setting your/oppo team colors
-            "Function Engine.HUD.SetShowScores",
+            // this function called when you join a team
+            "Function Engine.Player.HandleTeamChanged",
             [this](auto... fargs) {
+                  if (colorize_option == 0) {
+                        // this is because it seems only valid if your/oppo is set
+                        return;
+                  }
                   log::log_info("CALLING {} ...", fargs...);
                   set_colorblind_colors();
             },
@@ -157,7 +167,7 @@ void ColorBlindColorChanger::hook_colorblind_color_change_events() {
 
 void ColorBlindColorChanger::unhook_colorblind_color_change_events() {
       HookedEvents::RemoveHook("Function TAGame.GFxHUD_TA.OnAllTeamsCreated");
-      HookedEvents::RemoveHook("Function Engine.HUD.SetShowScores");
+      HookedEvents::RemoveHook("Function Engine.Player.HandleTeamChanged");
 }
 
 void ColorBlindColorChanger::set_colorblind_colors() {
@@ -195,25 +205,16 @@ void ColorBlindColorChanger::set_colorblind_colors() {
                               return;
                         }
 
-                        PriWrapper priw = pcw.GetPRI();
-                        if (!priw) {
-                              log::log_error("NO PRIW");
+                        log::log_debug("PlayerController's TEAM NUMBER: {}", pcw.GetTeamNum2());
+                        blue_team_idx = pcw.GetTeamNum2();  // MIGHT BE UCHAR_MAX IF YOU'RE NOT ON A TEAM!
+                        if (blue_team_idx == UCHAR_MAX) {
+                              log::log_error("NOT ON A TEAM! (NO YOU/OPPONENT DISTINCTION APPLICABLE)");
                               return;
                         }
-
-                        CarWrapper cw = priw.GetCar();
-                        if (!cw) {
-                              log::log_error("NO CAR");
-                              return;
-                        }
-
-                        if (cw.HasTeam()) {
-                              blue_team_idx   = priw.GetTeamNum();
-                              orange_team_idx = 1 - blue_team_idx;  // there are assumedly only 2 teams.
-                        }
+                        orange_team_idx = 1 - blue_team_idx;  // there are assumedly only 2 teams.
                   }
 
-                  TeamWrapper bteam = awtw.Count() > 0 ? awtw.Get(blue_team_idx) : NULL;
+                  TeamWrapper bteam = awtw.Count() > abs(blue_team_idx) ? awtw.Get(blue_team_idx) : NULL;
                   if (bteam) {
                         bteam.SetColorBlindFontColor(bcvar.getColorValue());
                         bteam.UpdateColors();
@@ -222,7 +223,7 @@ void ColorBlindColorChanger::set_colorblind_colors() {
                   }
 
                   // Modes like Knockout don't have an "orange team", so this is for protection against that.
-                  TeamWrapper oteam = awtw.Count() > 1 ? awtw.Get(orange_team_idx) : NULL;
+                  TeamWrapper oteam = awtw.Count() > abs(orange_team_idx) ? awtw.Get(orange_team_idx) : NULL;
                   if (oteam) {
                         oteam.SetColorBlindFontColor(ocvar.getColorValue());
                         oteam.UpdateColors();
@@ -394,10 +395,13 @@ void ColorBlindColorChanger::RenderSettings() {
       ImGui::Separator();
 
       with_Disabled(!plugin_enabled);
-      ImGui::Checkbox("Set color globally? ", &globally_set);
+      if (ImGui::Checkbox("Set color globally? ", &globally_set)) {
+            CVarManager::instance().get_cvar_global().setValue(globally_set);
+      }
       ImGui::SameLine(ImGui::GetCursorPosX(), 100.0f);
       ImGui::SetNextItemWidth(200.0f);
       if (ImGui::Combo("##colorize_option", &colorize_option, color_set_choice, IM_ARRAYSIZE(color_set_choice))) {
+            CVarManager::instance().get_cvar_colorize_option().setValue(colorize_option);
             set_colorblind_colors();
       }
 
@@ -587,6 +591,28 @@ void ColorBlindColorChanger::RenderSettings() {
       }
 
       ImGui::EndColumns();
+      ImGui::NewLine();
+
+      if (ImGui::CollapsingHeader("INFORMATION")) {
+            // SOME TEXT EXPLAINING SOME QUESTIONS
+            static const float INDENT_OFFSET = 40.0f;
+
+            // Question 1
+            ImGui::Indent(INDENT_OFFSET);
+
+            ImGui::TextUnformatted("WHAT IF I CRASH OR HAVE A PROBLEM?");
+            AddUnderline(col_white);
+            ImGui::TextUnformatted("WHAT IF I HAVE A SUGGESTION?");
+            AddUnderline(col_white);
+            ImGui::TextUnformatted("WHAT IF I NEED TO INFORM YOU OF A CORRECTION?");
+            AddUnderline(col_white);
+
+            ImGui::Unindent(INDENT_OFFSET);
+
+            ImGui::TextUnformatted("Raise an issue on the github page: ");
+            TextURL("HERE", "https://github.com/mgavin/ColorBlindColorChanger/issues", true, true);
+            ImGui::TextUnformatted("    Thanks!");
+      }
 }
 /**
  * \brief  "SetImGuiContext happens when the plugin's ImGui is initialized."
