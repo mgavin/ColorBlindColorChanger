@@ -46,7 +46,7 @@ inline void PopItemDisabled() {
 #define maybe_Disabled(flag) \
       IMGUI_SUGAR_SCOPED_STYLE_COND_VOID_0(ImGuiSugar::PushItemDisabled, ImGuiSugar::PopItemDisabled, flag)
 
-#define group_Disabled(flag) \
+#define with_Disabled(flag) \
       IMGUI_SUGAR_PARENT_SCOPED_STYLE_COND_VOID_0(ImGuiSugar::PushItemDisabled, ImGuiSugar::PopItemDisabled, flag)
 
 #endif

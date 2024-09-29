@@ -24,13 +24,31 @@
 
 #include "CVarManager.h"
 
+/*
+ * Note: This plugin and the associated code assumes that blue = 0, orange = 1; your team = blue = 0, oppo = orange = 1;
+ * they're all snynonyms.
+ *
+ */
 class ColorBlindColorChanger :
       public BakkesMod::Plugin::BakkesModPlugin,
       public BakkesMod::Plugin::PluginSettingsWindow {
 private:
+      // constants
       const ImColor col_white = ImColor {
             ImVec4 {1.0f, 1.0f, 1.0f, 1.0f}
       };
+
+      static inline const int         BLUE_TEAM_IDX   = 0;  // just to designate these more easily as being blue/orange
+      static inline const int         ORANGE_TEAM_IDX = 1;
+      static inline const LinearColor default_blue_rgba   = {0.0f, 0.1f, 0.45f, 1.0f};
+      static inline const LinearColor default_orange_rgba = {1.0f, 0.4f, 0.0f, 1.0f};
+
+      static inline const LinearColor my_blue_rgba   = {0.0f, 0.9f, 0.6f, 1.0f};
+      static inline const LinearColor my_orange_rgba = {1.0f, 0.0f, 0.0f, 1.0f};
+
+      static inline const char * color_set_choice[2] = {
+            "Set Blue / Orange team color",
+            "Set Your / Opponent team color"};
 
       // data members
       std::unique_ptr<PersistentManagedCVarStorage> cvar_storage;
@@ -38,17 +56,17 @@ private:
       bool                                             plugin_enabled = false;
       bool                                             cb_enabled     = false;  // is the COLOR BLIND SETTING enabled?!
       bool                                             globally_set   = true;
-      std::vector<std::string>                         game_maps_list;
       std::vector<std::pair<std::string, std::string>> game_maps_name_filename;
-      int                                              colorize_option = 0;
 
-      static inline const int         BLUE_TEAM_IDX   = 0;  // just to designate these more easily as being blue/orange
-      static inline const int         ORANGE_TEAM_IDX = 1;
-      static inline const LinearColor default_blue_rgba   = {0.0f, 0.1f, 0.45f, 1.0f};
-      static inline const LinearColor default_orange_rgba = {1.0f, 0.4f, 0.0f, 1.0f};
-      static inline const char *      color_set_choice[2] = {
-            "Set Blue / Orange team color",
-            "Set Your / Opponent team color"};
+      LinearColor temp_blue_copy   = {0.0f, 0.0f, 0.0f, 0.0f};
+      LinearColor temp_orange_copy = {0.0f, 0.0f, 0.0f, 0.0f};
+
+      int colorize_option = 0;
+
+      // debug levels.. for the luls
+      const char * debug_levels[5] = {"INFO", "DEBUG", "WARNING", "ERROR", "OFF"};
+      const char * debug_level     = debug_levels[4];  // INFO=0, DEBUG=1, WARNING=2, ERROR=3,
+                                                       // OFF=4}LOGGER::LOG_LEVEL
 
       // helper functions
       void init_cvars();
@@ -61,6 +79,7 @@ private:
       void unhook_colorblind_color_change_events();
 
       void set_colorblind_colors();
+      void unset_colorblind_colors();
 
 public:
       // honestly, for the sake of inheritance,
