@@ -1,6 +1,7 @@
 # Color Blind Color Changer
 
-Another BakkesMod plugin
+Improve visual clarity in your peripheral vision.  
+Helps from keeping nameplates with blending in with background colors in your peripheral vision on some maps.
 
 ## Examples
 
@@ -10,8 +11,6 @@ Another BakkesMod plugin
 
 Changes the colors of the scoreboard and nameplates for the respective teams.
 
-Helps from keeping nameplates with blending in with background colors in your peripheral vision on some maps.
-
 Set specific colors for blue team vs orange team, or your team vs opponent team.
 Set colors either to take effect for every map or customize them on a map-by-map basis.
 
@@ -20,4 +19,3 @@ Set colors either to take effect for every map or customize them on a map-by-map
 - Knockout doesn't have an orange team
 
 ## Possible Improvements
-- Be able to select which maps it works on and further fine grained customization
