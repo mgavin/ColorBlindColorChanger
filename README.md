@@ -14,6 +14,14 @@ Changes the colors of the scoreboard and nameplates for the respective teams.
 Set specific colors for blue team vs orange team, or your team vs opponent team.
 Set colors either to take effect for every map or customize them on a map-by-map basis.
 
+My preferred colors are: 
+| Blue team: | | |
+| Red: 0.0 | Green: 0.9 | Blue: 0.6 |
+| | | |
+| Orange team: | | |
+| Red: 1.0 | Green: 0.0 | Blue: 0.0 |
+
+
 ## Known Issues
 - Only works in color blind mode (Settings -> Interface -> Color Blind Mode)
 - Knockout doesn't have an orange team

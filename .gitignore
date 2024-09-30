@@ -367,3 +367,4 @@ FodyWeavers.xsd
 vcpkg_installed/
 imgui/
 imgui_sugar/
+*.zip
