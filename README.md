@@ -11,7 +11,7 @@ Helps from keeping nameplates with blending in with background colors in your pe
 
 Changes the colors of the scoreboard and nameplates for the respective teams.
 
-Set specific colors for blue team vs orange team, or your team vs opponent team.
+Set specific colors for blue team vs orange team, or your team vs opponent team.  
 Set colors either to take effect for every map or customize them on a map-by-map basis.
 
 My preferred colors are:  
