@@ -130,7 +130,7 @@ template <typename... Args> inline void LOG(const FormatWString & wformat_str, A
 
 // USING LOGLEVEL
 template <typename... Args>
-inline void LOG(const LOGLEVEL log_level, const FormatString & format_str, Args &&... args) {
+inline void LOG(const LOGLEVEL & log_level, const FormatString & format_str, Args &&... args) {
       if (log_level < g_loglevel) {
             return;
       }
