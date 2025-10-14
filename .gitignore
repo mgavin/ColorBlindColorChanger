@@ -368,3 +368,4 @@ vcpkg_installed/
 imgui/
 imgui_sugar/
 *.zip
+/plugins
