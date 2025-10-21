@@ -19,6 +19,10 @@ PersistentManagedCVarStorage::PersistentManagedCVarStorage(
       _auto_write(auto_write)
 
 {
+      // set up logging necessities
+      log::set_cvarmanager(_cv);
+      log::set_loglevel(log::LOGLEVEL::OFF);
+
       log::log_info("PersistentStorage: created and will store the data in {}", _storage_file.string());
       if (auto_load) {
             plugin->gameWrapper->SetTimeout([this](...) { Load(); }, 0.1f);
@@ -32,7 +36,8 @@ PersistentManagedCVarStorage::CVarCacheItem::CVarCacheItem(CVarWrapper cvar) :
 std::filesystem::path PersistentManagedCVarStorage::GetStorageFilePath(
       const std::shared_ptr<GameWrapper> & gw,
       std::string                          file_name) {
-      return gw->GetBakkesModPath() / "cfg" / file_name.append(".cfg");
+      // return gw->GetBakkesModPath() / "cfg" / file_name.append(".cfg");
+      return file_name.append(".cfg");
 }
 
 void PersistentManagedCVarStorage::OnPersistentCVarChanged(const std::string & old, CVarWrapper changed_cvar) {
