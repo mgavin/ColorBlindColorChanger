@@ -1,4 +1,4 @@
-#include "ColorBlindColorChanger.h"
+﻿#include "ColorBlindColorChanger.h"
 
 #include "Windows.h"  // IWYU pragma: keep
 
@@ -21,7 +21,7 @@ namespace {
 namespace log = LOGGER;
 };  // namespace
 
-BAKKESMOD_PLUGIN(ColorBlindColorChanger, "ColorBlindColorChanger", "1.0.0", /*UNUSED*/ NULL);
+BAKKESMOD_PLUGIN(ColorBlindColorChanger, "ColorBlindColorChanger", "1.0.1", /*UNUSED*/ NULL);
 
 /**
  * \brief do the following when your plugin is loaded
@@ -45,9 +45,7 @@ void ColorBlindColorChanger::onLoad() {
       if (mlw) {
             ArrayWrapper<MapDataWrapper> awmdw = mlw.GetSortedMaps();
             for (const auto & map : awmdw) {
-                  if (!map) {
-                        continue;
-                  }
+                  if (!map) { continue; }
 
                   game_maps_name_filename.emplace_back(std::make_pair(map.GetLocalizedName(), map.GetName()));
             }
@@ -101,11 +99,9 @@ void ColorBlindColorChanger::init_cvars() {
       }
 
       CVarManager::instance().get_cvar_enabled().addOnValueChanged([this](std::string oldValue, CVarWrapper newValue) {
-            if (newValue.getBoolValue()) {
-                  enable_plugin();
-            } else {
-                  disable_plugin();
-            }
+            if (plugin_enabled == newValue.getBoolValue() == true) { return; }
+            plugin_enabled = newValue.getBoolValue();
+            plugin_enabled ? enable_plugin() : disable_plugin();
       });
 
       CVarManager::instance().get_cvar_global().addOnValueChanged(
@@ -292,9 +288,7 @@ void ColorBlindColorChanger::disable_plugin() {
 static inline void AlignForWidth(float width, float alignment = 0.5f) {
       float avail = ImGui::GetContentRegionAvail().x;
       float off   = (avail - width) * alignment;
-      if (off > 0.0f) {
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
-      }
+      if (off > 0.0f) { ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off); }
 }
 
 /**
@@ -319,9 +313,7 @@ static inline void AddUnderline(ImColor col_) {
  * \param SameLineAfter_ Should use on the same line after?
  */
 static inline void TextURL(const char * name_, const char * URL_, uint8_t SameLineBefore_, uint8_t SameLineAfter_) {
-      if (1 == SameLineBefore_) {
-            ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-      }
+      if (1 == SameLineBefore_) { ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x); }
       ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 165, 255, 255));
       ImGui::Text("%s", name_);
       ImGui::PopStyleColor();
@@ -329,8 +321,10 @@ static inline void TextURL(const char * name_, const char * URL_, uint8_t SameLi
             if (ImGui::IsMouseClicked(0)) {
                   // What if the URL length is greater than int but less than size_t?
                   // well then the program should crash, but this is fine.
-                  const int nchar =
-                        std::clamp(static_cast<int>(std::strlen(URL_)), 0, (std::numeric_limits<int>::max)() - 1);
+                  const int nchar = std::clamp(
+                        static_cast<int>(std::strlen(URL_)),
+                        0,
+                        (std::numeric_limits<int>::max)() - 1);
                   wchar_t * URL = new wchar_t[nchar + 1];
                   wmemset(URL, 0, nchar + 1);
                   MultiByteToWideChar(CP_UTF8, 0, URL_, nchar, URL, nchar);
@@ -343,9 +337,7 @@ static inline void TextURL(const char * name_, const char * URL_, uint8_t SameLi
       } else {
             AddUnderline(ImGui::GetStyle().Colors[ImGuiCol_Button]);
       }
-      if (1 == SameLineAfter_) {
-            ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-      }
+      if (1 == SameLineAfter_) { ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x); }
 }
 
 /**
@@ -385,9 +377,7 @@ void ColorBlindColorChanger::RenderSettings() {
                         debug_level = debug_levels[n];
                         log::set_loglevel(static_cast<log::LOGLEVEL>(n));
                   }
-                  if (is_selected) {
-                        ImGui::SetItemDefaultFocus();
-                  }
+                  if (is_selected) { ImGui::SetItemDefaultFocus(); }
             }
             ImGui::EndCombo();
       }
@@ -432,20 +422,20 @@ void ColorBlindColorChanger::RenderSettings() {
                   for (size_t i = 0; i < game_maps_name_filename.size(); ++i) {
                         std::string_view map_name     = game_maps_name_filename[i].first;
                         std::string_view map_filename = game_maps_name_filename[i].second;
-                        bool             is_set =
-                              (CVarManager::instance()
-                                     .getCVM()
-                                     ->getCvar(
-                                           CVarManager::instance().get_cvar_prefix() + map_filename.data() + "_blue")
-                                     .getColorValue()
-                               != default_blue_rgba)
-                              || (CVarManager::instance()
-                                        .getCVM()
-                                        ->getCvar(
-                                              CVarManager::instance().get_cvar_prefix() + map_filename.data()
-                                              + "_orange")
-                                        .getColorValue()
-                                  != default_orange_rgba);
+                        bool             is_set       = (CVarManager::instance()
+                                             .getCVM()
+                                             ->getCvar(
+                                                   CVarManager::instance().get_cvar_prefix() + map_filename.data()
+                                                   + "_blue")
+                                             .getColorValue()
+                                       != default_blue_rgba)
+                                      || (CVarManager::instance()
+                                                .getCVM()
+                                                ->getCvar(
+                                                      CVarManager::instance().get_cvar_prefix() + map_filename.data()
+                                                      + "_orange")
+                                                .getColorValue()
+                                          != default_orange_rgba);
                         char buf[128] = {0};
                         snprintf(
                               buf,
@@ -479,8 +469,8 @@ void ColorBlindColorChanger::RenderSettings() {
       CVarWrapper ocvar = CVarManager::instance().getCVM()->getCvar(
             CVarManager::instance().get_cvar_prefix() + map_name_or_global + "_orange");
 
-      ImGuiColorEditFlags color_select_flags =
-            ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_Float;
+      ImGuiColorEditFlags color_select_flags = ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_DisplayRGB
+                                               | ImGuiColorEditFlags_Float;
 
       const char * blue_txt = colorize_option == 0 ? "Blue" : "Your";
       ImGui::Text("%s team: ", blue_txt);
@@ -508,8 +498,8 @@ void ColorBlindColorChanger::RenderSettings() {
       ImGui::Indent(indent_factor);
       ImGui::SetNextItemWidth(100.0f);
       if (ImGui::Button("Load Map")) {
-            constexpr static const char * load_map_str =
-                  "start {}?Game=TAGame.GameInfo_Soccar_TA?Lan?GameTags=BotsIntro,UnlimitedTime,PlayerCount8";
+            constexpr static const char * load_map_str
+                  = "start {}?Game=TAGame.GameInfo_Soccar_TA?Lan?GameTags=BotsIntro,UnlimitedTime,PlayerCount8";
             if (globally_set) {
                   gameWrapper->Execute([this](GameWrapper * gw) {
                         // needs to be called before the execute, otherwise...?
@@ -532,9 +522,7 @@ void ColorBlindColorChanger::RenderSettings() {
       ImGui::Indent(indent_factor);
 
       ImGui::SetNextItemWidth(25.0f);
-      if (ImGui::Button("Set Default##def_blue")) {
-            bcvar.setValue(default_blue_rgba);
-      }
+      if (ImGui::Button("Set Default##def_blue")) { bcvar.setValue(default_blue_rgba); }
 
       ImGui::NewLine();
       ImGui::TextUnformatted("Copied color:");
@@ -563,9 +551,7 @@ void ColorBlindColorChanger::RenderSettings() {
       ImGui::Indent(indent_factor);
 
       ImGui::SetNextItemWidth(25.0f);
-      if (ImGui::Button("Set Default##def_orange")) {
-            ocvar.setValue(default_orange_rgba);
-      }
+      if (ImGui::Button("Set Default##def_orange")) { ocvar.setValue(default_orange_rgba); }
 
       ImGui::NewLine();
       ImGui::TextUnformatted("Copied color:");
